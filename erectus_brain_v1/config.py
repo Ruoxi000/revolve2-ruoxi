@@ -8,7 +8,7 @@ DATABASE_FILE = "database_v2_100gen_DE_Speed=3_middle.sqlite"
 
 NUM_REPETITIONS = 1
 NUM_SIMULATORS = 8
-NUM_GENERATIONS = 300
+NUM_GENERATIONS = 100
 
 # BODY = gecko_v1()
 BODY = gecko_v2()
