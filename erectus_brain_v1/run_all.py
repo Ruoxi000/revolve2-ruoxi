@@ -2,6 +2,14 @@
 
 import config
 import main
+from sqlalchemy.orm import Session
+from revolve2.experimentation.database import OpenMethod, open_database_sqlite
+from database_components import Individual
+from evaluator import Evaluator
+from revolve2.modular_robot.body.base import ActiveHinge
+from revolve2.modular_robot.brain.cpg import (
+    active_hinges_to_cpg_network_structure_neighbor,
+)
 from revolve2.standards.modular_robots_v1 import gecko_v1
 from revolve2.standards.modular_robots_v2 import gecko_v2
 
@@ -22,25 +30,54 @@ def run_all() -> None:
 
     config.NUM_GENERATIONS = 100
 
-    for body_name, body in bodies:
-        for w_move_max in w_move_max_values:
-            for height_label, fall_threshold, h_min, h_max in height_groups:
-                for optimizer in optimizers:
-                    config.BODY = body
-                    config.W_MOVE_MAX = w_move_max
-                    config.FALL_HEIGHT_THRESHOLD = fall_threshold
-                    config.H_MIN = h_min
-                    config.H_MAX = h_max
-                    config.OPTIMIZER = optimizer
-                    config.DATABASE_FILE = (
-                        f"database_{body_name}_W{int(w_move_max)}_H{height_label}_{optimizer}.sqlite"
-                    )
-                    print(
-                        f"Running: body={body_name}, W_MOVE_MAX={w_move_max},"
-                        f" heights={height_label}, optimizer={optimizer}"
-                    )
-                    main.main()
-
+    with open("result.txt", "w") as out:
+        for body_name, body in bodies:
+            for w_move_max in w_move_max_values:
+                for height_label, fall_threshold, h_min, h_max in height_groups:
+                    for optimizer in optimizers:
+                        config.BODY = body
+                        config.W_MOVE_MAX = w_move_max
+                        config.FALL_HEIGHT_THRESHOLD = fall_threshold
+                        config.H_MIN = h_min
+                        config.H_MAX = h_max
+                        config.OPTIMIZER = optimizer
+                        config.DATABASE_FILE = (
+                            f"database_{body_name}_W{int(w_move_max)}_H{height_label}_{optimizer}.sqlite"
+                        )
+                        print(
+                            f"Running: body={body_name}, W_MOVE_MAX={w_move_max},",
+                            f" heights={height_label}, optimizer={optimizer}"
+                        )
+                        main.main()
+                        db = open_database_sqlite(
+                            config.DATABASE_FILE, OpenMethod.OPEN_IF_EXISTS
+                        )
+                        with Session(db) as ses:
+                            best_ind = (
+                                ses.query(Individual)
+                                .order_by(Individual.fitness.desc())
+                                .limit(1)
+                                .one()
+                            )
+                        active_hinges = config.BODY.find_modules_of_type(ActiveHinge)
+                        cpg_struct, output_mapping = active_hinges_to_cpg_network_structure_neighbor(
+                            active_hinges
+                        )
+                        evaluator = Evaluator(
+                            headless=True,
+                            num_simulators=config.NUM_SIMULATORS,
+                            cpg_network_structure=cpg_struct,
+                            body=config.BODY,
+                            output_mapping=output_mapping,
+                        )
+                        fits, height, velocity, yaw, penalty = evaluator.evaluate_components(
+                            [best_ind.genotype.parameters],
+                            generation=config.NUM_GENERATIONS - 1,
+                        )
+                        out.write(
+                            f"{config.DATABASE_FILE},{fits[0]},{height[0]},{velocity[0]},{yaw[0]},{penalty[0]}\n"
+                        )
+                        out.flush()
 
 if __name__ == "__main__":
     run_all()
