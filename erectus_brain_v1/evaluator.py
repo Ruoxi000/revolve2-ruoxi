@@ -139,7 +139,7 @@ class Evaluator:
         g = generation if generation is not None else self.current_generation
 
         w_move, w_yaw, phase_progress = self._phase_weights(g)
-        sim_seconds = float(config.SIM_TIME)  # 恒定 30 秒
+        sim_seconds = float(config.SIMULATION_SECONDS)  # 恒定 30 秒
 
         robots = self._make_robots(solutions)
 
