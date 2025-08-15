@@ -58,8 +58,8 @@ def main() -> None:
         output_mapping=output_mapping,
     )
 
-    # Show the robot.
-    evaluator.evaluate([parameters])
+    # Show the robot at the final generation.
+    evaluator.evaluate([parameters], generation=config.NUM_GENERATIONS - 1)
 
 
 if __name__ == "__main__":
