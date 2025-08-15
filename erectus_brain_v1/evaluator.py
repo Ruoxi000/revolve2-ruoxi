@@ -136,21 +136,6 @@ class Evaluator:
         generation: int | None = None,
     ) -> npt.NDArray[np.float_]:
         """Evaluate multiple controller parameter sets."""
-        fits, _, _, _, _ = self.evaluate_components(solutions, generation)
-        return fits
-
-    def evaluate_components(
-        self,
-        solutions: list[npt.NDArray[np.float_]],
-        generation: int | None = None,
-    ) -> tuple[
-        npt.NDArray[np.float_],
-        npt.NDArray[np.float_],
-        npt.NDArray[np.float_],
-        npt.NDArray[np.float_],
-        npt.NDArray[np.float_],
-    ]:
-        """Evaluate controllers and return fitness and its components."""
         g = generation if generation is not None else self.current_generation
 
         w_move, w_yaw, phase_progress = self._phase_weights(g)
@@ -173,10 +158,6 @@ class Evaluator:
         )
 
         fits: list[float] = []
-        heights: list[float] = []
-        velocities: list[float] = []
-        yaws: list[float] = []
-        penalties: list[float] = []
         for robot, states in zip(robots, scene_states):
             ms0 = states[0].get_modular_robot_simulation_state(robot)
             msN = states[-1].get_modular_robot_simulation_state(robot)
@@ -225,23 +206,13 @@ class Evaluator:
                 config.H_MAX - config.H_MIN
             )
 
-            height_part = config.W_HEIGHT * h_clamp
-            velocity_part = w_move * dxy
-            yaw_part = w_yaw * dyaw
-            penalty_part = penalty
-
-            fit = height_part + velocity_part - yaw_part - penalty_part
+            fit = (
+                config.W_HEIGHT * h_clamp
+                + w_move * dxy
+                - w_yaw * dyaw
+                - penalty
+            )
 
             fits.append(float(fit))
-            heights.append(float(height_part))
-            velocities.append(float(velocity_part))
-            yaws.append(float(yaw_part))
-            penalties.append(float(penalty_part))
 
-        return (
-            np.array(fits),
-            np.array(heights),
-            np.array(velocities),
-            np.array(yaws),
-            np.array(penalties),
-        )
+        return np.array(fits)
