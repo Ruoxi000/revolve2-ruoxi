@@ -1,0 +1,1094 @@
+=======================================
+=======================================
+=======================================
+         New log starts here.          
+=======================================
+=======================================
+=======================================
+----------------
+Start experiment
+Rng seed: 1755284753278747
+Saving experiment configuration.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 1 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 2 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 3 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 4 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 5 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 6 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 7 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 8 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 9 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 10 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 11 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 12 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 13 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 14 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 15 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 16 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 17 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 18 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 19 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 20 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 21 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 22 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 23 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 24 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 25 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 26 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 27 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 28 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 29 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 30 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 31 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 32 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 33 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 34 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 35 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 36 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 37 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 38 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 39 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 40 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 41 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 42 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 43 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 44 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 45 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 46 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 47 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 48 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 49 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 50 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 51 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 52 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 53 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 54 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 55 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 56 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 57 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 58 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 59 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 60 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 61 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 62 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 63 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 64 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 65 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 66 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 67 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 68 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 69 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 70 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 71 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 72 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 73 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 74 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 75 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 76 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 77 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 78 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 79 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 80 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 81 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 82 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 83 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 84 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 85 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 86 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 87 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 88 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 89 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 90 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 91 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 92 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 93 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 94 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 95 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 96 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 97 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 98 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID-DE] Generation 99 / 100
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[HYBRID] Switch to CMA-ES. Hot-start sigma=0.1250
+=======================================
+=======================================
+=======================================
+         New log starts here.          
+=======================================
+=======================================
+=======================================
+----------------
+Start experiment
+Rng seed: 1755289315481778
+Saving experiment configuration.
+=======================================
+=======================================
+=======================================
+         New log starts here.          
+=======================================
+=======================================
+=======================================
+=======================================
+=======================================
+=======================================
+         New log starts here.          
+=======================================
+=======================================
+=======================================
+----------------
+Start experiment
+Rng seed: 1755289538542538
+Saving experiment configuration.
+=======================================
+=======================================
+=======================================
+         New log starts here.          
+=======================================
+=======================================
+=======================================
+----------------
+Start experiment
+Rng seed: 1755289962529089
+Saving experiment configuration.
+[CMA-ES] (restart #0) init: sigma=0.2500, popsize=4 + 3 * np.log(N)  # population size, AKA lambda, int(popsize) is the number of new solution per iteration
+[CMA-ES] Generation 1
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 2
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 3
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 4
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 5
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 6
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 7
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 8
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 9
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 10
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 11
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 12
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 13
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 14
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 15
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 16
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 17
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 18
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 19
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 20
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 21
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 22
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 23
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 24
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 25
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 26
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 27
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 28
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 29
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 30
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 31
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 32
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 33
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 34
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 35
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 36
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 37
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 38
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 39
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 40
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 41
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 42
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 43
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 44
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 45
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 46
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 47
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 48
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 49
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 50
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 51
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 52
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 53
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 54
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 55
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 56
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 57
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 58
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 59
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 60
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 61
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 62
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 63
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 64
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Starting simulation batch with MuJoCo.
+Finished batch.
+Saving generation.
+[CMA-ES] Generation 65
+Starting simulation batch with MuJoCo.
