@@ -10,12 +10,12 @@ from revolve2.standards.modular_robots_v2 import gecko_v2
 # -----------------------------
 # Database / run configuration
 # -----------------------------
-DATABASE_FILE = "database.sqlite"
-NUM_REPETITIONS = 1
-NUM_SIMULATORS = 8
+DATABASE_FILE = "database_v1_W4_Hhigh_hybrid.sqlite"
+NUM_REPETITIONS = 2
+NUM_SIMULATORS = 8   # 运行cmas时只能开到4
 
 # Choose optimizer: "cmaes" | "de" | "hybrid" (DE -> CMA-ES)
-OPTIMIZER = "cmaes"
+OPTIMIZER = "hybrid"
 
 # -----------------------------
 # Fixed robot body (template)
@@ -29,7 +29,7 @@ BODY = gecko_v1()
 #   - TRANSITION_LENGTH generations: linear transition
 #   - Remaining generations: walk priority
 # -----------------------------
-STAND_PHASE_FRAC = 0.20
+STAND_PHASE_FRAC = 0.10
 TRANSITION_LENGTH = 10
 
 # Constant simulation time in seconds (keep SIM_TIME_WALK name for rerun.py compatibility)
@@ -45,7 +45,7 @@ W_YAW = 0.3              # yaw penalty weight (later phases)
 # Adaptive fall penalty
 # -----------------------------
 FALL_HEIGHT_THRESHOLD = 0.06    # meters under which we consider "fallen/lying"
-FALL_EVENT_MIN_DURATION = 0.15  # seconds required under threshold to count as a fall-event
+FALL_EVENT_MIN_DURATION = 0.10  # seconds required under threshold to count as a fall-event
 FALL_PENALTY_BASE = 0.5         # base penalty
 FALL_PENALTY_PER_EXTRA = 0.25   # extra penalty per additional fall-event
 FALL_PENALTY_FRAC_WEIGHT = 2.0  # penalty proportional to fraction of time fallen
@@ -100,21 +100,21 @@ INITIAL_STD = 0.25         # default sigma if not hot-started
 CMA_POPSIZE = None         # None: let cma use 4 + floor(3 ln n)
 CMA_ACTIVE = True          # CMA_active – negative weights on bad directions
 CMA_ELITIST = True         # keep best individual
-CMA_DIAGONAL = 7           # diagonal covariance for first N iterations (stabilizes early stage)
+CMA_DIAGONAL = 15           # diagonal covariance for first N iterations (stabilizes early stage)
 
 # Hybrid (DE -> CMA): both stages lengths (require CMA gens == DE gens)
-HYBRID_DE_GENERATIONS = 100
-HYBRID_CMA_GENERATIONS = HYBRID_DE_GENERATIONS
+HYBRID_DE_GENERATIONS = 30
+HYBRID_CMA_GENERATIONS = 30
 
 # Hot-start from DE: how many elites to compute mean/std from
 HYBRID_TOPK_FOR_CMA = max(5, POPULATION_SIZE // 10)
 
 # CMA restarts (simple IPOP-style)
-CMA_USE_RESTARTS = True
-CMA_STALL_GENS = 20        # restart if no improvement for this many generations
+CMA_USE_RESTARTS = False
+CMA_STALL_GENS = 40        # restart if no improvement for this many generations
 CMA_RESTARTS_MAX = 2       # max restarts
-CMA_POPSIZE_INC = 2        # multiply popsize per restart
-CMA_SIGMA_BOOST = 1.8      # multiply sigma per restart
+CMA_POPSIZE_INC = 1.5        # multiply popsize per restart
+CMA_SIGMA_BOOST = 1.4      # multiply sigma per restart
 
 # Optional re-evaluation of top candidates to reduce noise
 CMA_TOPK_REEVAL = 3        # re-evaluate top-k from current generation

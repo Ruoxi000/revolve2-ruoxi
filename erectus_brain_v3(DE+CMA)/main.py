@@ -8,7 +8,6 @@
 import logging
 import math
 
-import cma
 import config
 import numpy as np
 from database_components import (
@@ -62,11 +61,15 @@ def _run_cma_with_tricks(
     start_gen_index: int,
     rng_seed: int,
     initial_sigma: float | None = None,
+    elite_inject: np.ndarray | None = None,   # NEW: pool of elites to inject in the first few generations
 ) -> None:
-    """CMA-ES wrapper: hot-start, active+elitist, diagonal start, mild restarts, top-k re-evaluation."""
+    """CMA-ES wrapper: hot-start, active+elitist, diagonal start, mild restarts, top-k re-evaluation, elite injection."""
+    # lazy import
+    import cma
+
     dim = initial_mean.size
 
-    # ---- build base options (as dict) ----
+    # ---- CMA options ----
     base_opts_obj = cma.CMAOptions()
     base_opts_obj.set("bounds", list(config.BOUNDS))
     base_opts_obj.set("seed", int(rng_seed))
@@ -77,10 +80,7 @@ def _run_cma_with_tricks(
     if isinstance(config.CMA_DIAGONAL, int) and config.CMA_DIAGONAL > 0:
         base_opts_obj.set("CMA_diagonal", int(config.CMA_DIAGONAL))
 
-    # IMPORTANT: turn CMAOptions into a plain dict (so we can copy/mutate with normal dict ops)
-    base_options: dict = dict(base_opts_obj)
-
-    # if user explicitly set popsize, record an integer override; otherwise leave None to use CMA default
+    base_options: dict = dict(base_opts_obj)  # turn into a plain dict
     popsize_override: int | None = None
     if config.CMA_POPSIZE is not None:
         popsize_override = int(config.CMA_POPSIZE)
@@ -92,20 +92,15 @@ def _run_cma_with_tricks(
     global_best_f = -1e18
     global_best_x = initial_mean.copy()
 
-    local_gen = 0  # generations within CMA stage (across restarts)
-
+    local_gen = 0
     while local_gen < total_gens:
         budget_left = total_gens - local_gen
 
-        # make a fresh dict of options for this CMA run
         opts = dict(base_options)
         if popsize_override is not None:
-            # Now it's a clean int; won't be the CMAOptions string default.
             opts["popsize"] = int(popsize_override)
 
-        logging.info(
-            f"[CMA-ES] (restart #{restarts_done}) init: sigma={sigma:.4f}, popsize={opts.get('popsize', 'auto')}"
-        )
+        logging.info(f"[CMA-ES] (restart #{restarts_done}) init: sigma={sigma:.4f}, popsize={opts.get('popsize', 'auto')}")
         opt = cma.CMAEvolutionStrategy(initial_mean.tolist(), sigma, opts)
 
         no_improve_count = 0
@@ -113,14 +108,18 @@ def _run_cma_with_tricks(
             global_gen = start_gen_index + local_gen
             logging.info(f"[CMA-ES] Generation {global_gen + 1}")
 
-            # 1) ask solutions
+            # 1) ask – let CMA handle bounds internally (NO manual np.clip here)
             solutions = np.asarray(opt.ask(), dtype=float)
-            solutions = np.clip(solutions, config.BOUNDS[0], config.BOUNDS[1])
+
+            # 1.1) elite injection in the first few generations
+            if elite_inject is not None and local_gen < 2:
+                n_inj = min(elite_inject.shape[0], solutions.shape[0])
+                solutions[:n_inj] = elite_inject[:n_inj]
 
             # 2) evaluate
             fitnesses = evaluator.evaluate(solutions.tolist(), generation=global_gen)
 
-            # optional re-evaluation of top-k to reduce noise
+            # 2.1) optional re-eval top-k to reduce noise
             if config.CMA_TOPK_REEVAL > 0 and config.CMA_REEVAL_TIMES > 1:
                 k = min(config.CMA_TOPK_REEVAL, solutions.shape[0])
                 idx = np.argsort(fitnesses)[::-1][:k]
@@ -133,10 +132,10 @@ def _run_cma_with_tricks(
             # 3) tell (CMA minimizes)
             opt.tell(solutions.tolist(), (-fitnesses).tolist())
 
-            # 4) save to DB
+            # 4) save
             _save_generation(dbengine, experiment, global_gen, np.asarray(solutions), np.asarray(fitnesses))
 
-            # progress & stagnation tracking
+            # 5) progress & restart logic
             best_idx = int(np.argmax(fitnesses))
             best_f = float(fitnesses[best_idx])
             if best_f > global_best_f:
@@ -149,28 +148,25 @@ def _run_cma_with_tricks(
             local_gen += 1
             budget_left -= 1
 
-            # restart if stagnating and we still have budget
             if (
                 config.CMA_USE_RESTARTS
                 and no_improve_count >= config.CMA_STALL_GENS
                 and restarts_done < config.CMA_RESTARTS_MAX
                 and local_gen < total_gens
             ):
-                logging.info("[CMA-ES] Stagnation detected, restarting with larger popsize and sigma.")
-                # hot-start next run from global best
+                logging.info("[CMA-ES] Stagnation detected, soft restart with slightly larger sigma and popsize.")
                 initial_mean = global_best_x.copy()
                 sigma *= float(config.CMA_SIGMA_BOOST)
-                # increase population size based on the actual integer popsize of current run
                 cur_popsize = int(opt.popsize)
                 popsize_override = int(max(cur_popsize * config.CMA_POPSIZE_INC, cur_popsize + 1))
                 restarts_done += 1
-                break  # break inner loop to restart
+                break  # restart
 
         else:
-            # budget used up in this run
             break
 
     logging.info(f"[CMA-ES] Finished. Best fitness in CMA stage: {global_best_f:.4f}")
+
 
 
 
@@ -189,7 +185,8 @@ def _de_evolve_with_tricks(
     - jDE-style self-adaptation of F and CR
     - dither (small random F/CR for a subset)
     - elite injection (replace a fraction of worst by jittered elites)
-    Returns: (population, fitnesses, last_generation_index)
+    NOTE: This helper does NOT save to DB. Caller is responsible for saving.
+    Returns: (population, fitnesses, last_generation_index_inside_this_call)
     """
     N = config.POPULATION_SIZE
 
@@ -203,9 +200,7 @@ def _de_evolve_with_tricks(
 
     gen = 0
     while gen < gens - 1:
-        logging.info(f"[HYBRID-DE] Generation {gen + 1} / {gens}")
-
-        # jDE adaptation: with probability tau, resample F or CR from ranges
+        # jDE adaptation
         if config.DE_USE_JDE:
             mask_f = rng.random(N) < config.DE_TAU_F
             F_i[mask_f] = rng.uniform(config.DE_F_RANGE[0], config.DE_F_RANGE[1], size=np.sum(mask_f))
@@ -214,30 +209,24 @@ def _de_evolve_with_tricks(
 
         trial_vectors = np.empty_like(population)
         for i in range(N):
-            # choose F, CR for this individual
             F_use = F_i[i]
             CR_use = CR_i[i]
-
-            # dither (small fraction): randomize F/CR within dither ranges
             if config.DE_USE_DITHER and rng.random() < config.DE_DITHER_PROB:
                 F_use = float(rng.uniform(*config.DE_DITHER_F_RANGE))
                 CR_use = float(rng.uniform(*config.DE_DITHER_CR_RANGE))
 
-            # choose distinct indices
             idxs = list(range(N))
             idxs.remove(i)
             r1, r2, r3 = rng.choice(idxs, 3, replace=False)
             best_idx = int(np.argmax(fitnesses))
 
-            # mutation strategies
             if config.DE_STRATEGY == "best1bin":
                 mutant = population[best_idx] + F_use * (population[r2] - population[r3])
             elif config.DE_STRATEGY == "current2best":
                 mutant = population[i] + F_use * (population[best_idx] - population[i]) + F_use * (population[r2] - population[r3])
-            else:  # "rand1bin"
+            else:
                 mutant = population[r1] + F_use * (population[r2] - population[r3])
 
-            # binomial crossover
             cross = rng.random(dim) < CR_use
             if not np.any(cross):
                 cross[rng.integers(dim)] = True
@@ -245,15 +234,13 @@ def _de_evolve_with_tricks(
             trial = np.clip(trial, low, high)
             trial_vectors[i] = trial
 
-        # Evaluate trials
         trial_fitnesses = evaluator.evaluate(trial_vectors.tolist(), generation=gen + 1)
 
-        # Greedy selection
         improved = trial_fitnesses > fitnesses
         population[improved] = trial_vectors[improved]
         fitnesses[improved] = trial_fitnesses[improved]
 
-        # Elite injection to maintain diversity & exploit good zones
+        # Elite injection
         if config.DE_ELITE_INJECTION and config.DE_INJECTION_RATE > 0.0:
             k = min(config.DE_ELITE_K, N)
             worst_n = max(1, int(round(N * config.DE_INJECTION_RATE)))
@@ -261,15 +248,13 @@ def _de_evolve_with_tricks(
             worst_idx = idx_sorted[:worst_n]
             top_idx = idx_sorted[-k:]
             elites = population[top_idx]
-            # tile elites and add small Gaussian noise
             injected = np.tile(elites, (int(np.ceil(worst_n / k)), 1))[:worst_n]
             noise = rng.normal(loc=0.0, scale=config.DE_INJECTION_NOISE, size=injected.shape)
             injected = np.clip(injected + noise, low, high)
             population[worst_idx] = injected
-            # After injection we don't evaluate immediately; evaluate next generation
+            # evaluate injected next loop
 
         gen += 1
-        _save_generation(dbengine, experiment, gen, population, fitnesses)  # type: ignore  # saved below in run_experiment
 
     return population, fitnesses, gen
 
@@ -346,6 +331,7 @@ def run_experiment(dbengine: Engine) -> None:
             # '_de_evolve_with_tricks' internally saves; refresh population/fitnesses
             population, fitnesses = pop, fits
             gen += 1
+            _save_generation(dbengine, experiment, gen, population, fitnesses)
 
     elif config.OPTIMIZER == "hybrid":
         # ---------------------------------------
@@ -428,17 +414,26 @@ def run_experiment(dbengine: Engine) -> None:
             _save_generation(dbengine, experiment, gen, population, fitnesses)
 
         # ---------------------------------------
-        # Stage 2: CMA-ES (hot-start + mild restarts), length = HYBRID_CMA_GENERATIONS
+        # Stage 2: CMA-ES (hot-start + mild restarts)
         # ---------------------------------------
-        k = int(config.HYBRID_TOPK_FOR_CMA)
         idx_sorted = np.argsort(fitnesses)[::-1]
+        best_idx = int(idx_sorted[0])
+        best_param = population[best_idx].copy()
+
+        k = int(config.HYBRID_TOPK_FOR_CMA)
         top_idx = idx_sorted[:k]
         top_params = population[top_idx]
 
-        # mean from top-K, sigma from their spread (guarded by minimum INITIAL_STD*0.5)
-        mean_init = np.mean(top_params, axis=0)
+        # Hot-start:
+        #   mean = DE global best (NOT the mean of top-K)
+        #   sigma = 0.5 * median(std(topK)), with a safe lower bound 0.08
+        mean_init = best_param.copy()
         std_init_vec = np.std(top_params, axis=0)
-        sigma_init = float(max(config.INITIAL_STD * 0.5, np.median(std_init_vec)))
+        sigma_init = float(max(0.08, 0.5 * np.median(std_init_vec)))  # tighter start
+
+        # Elite pool for injection in the first few CMA generations
+        # (best first, then the rest of top-K)
+        elite_pool = np.vstack([best_param, top_params[1:min(k, len(top_params))]])
 
         start_gen_index = gen + 1
         logging.info(f"[HYBRID] Switch to CMA-ES. Hot-start sigma={sigma_init:.4f}")
@@ -451,7 +446,9 @@ def run_experiment(dbengine: Engine) -> None:
             start_gen_index=start_gen_index,
             rng_seed=rng_seed,
             initial_sigma=sigma_init,
+            elite_inject=elite_pool,  # NEW: inject elites in first CMA generations
         )
+
 
     else:
         raise ValueError(f"Unknown optimizer '{config.OPTIMIZER}'")
