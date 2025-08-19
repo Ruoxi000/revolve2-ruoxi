@@ -96,10 +96,14 @@ class Evaluator(Eval):
         gA_end = int(config.NUM_GENERATIONS * config.STAND_PHASE_FRAC)
         trans = int(config.TRANSITION_LENGTH)
         if g < gA_end:
-            return 0.0, 0.0, 0.0
+            return config.W_MOVE_STAND, 0.0, 0.0
         if g < gA_end + trans:
             alpha = (g - gA_end) / max(1, trans)
-            return alpha * config.W_MOVE_MAX, alpha * config.W_YAW, alpha
+            move = config.W_MOVE_STAND + alpha * (
+                config.W_MOVE_MAX - config.W_MOVE_STAND
+            )
+            yaw = alpha * config.W_YAW
+            return move, yaw, alpha
         return config.W_MOVE_MAX, config.W_YAW, 1.0
 
     def evaluate(self, population: list[Genotype]) -> list[float]:

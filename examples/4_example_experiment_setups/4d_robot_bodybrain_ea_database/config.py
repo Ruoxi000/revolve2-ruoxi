@@ -19,6 +19,7 @@ FITNESS_START_FRACTION = 0.10
 
 # Fitness weights
 W_HEIGHT = 1.0
+W_MOVE_STAND = 0.5  # encourage slight movement even in stand phase
 W_MOVE_MAX = 4.0
 W_YAW = 0.3
 
