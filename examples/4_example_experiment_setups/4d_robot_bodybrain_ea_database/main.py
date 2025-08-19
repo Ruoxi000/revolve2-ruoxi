@@ -249,6 +249,7 @@ def run_experiment(dbengine: Engine) -> None:
 
     # Evaluate the initial population.
     logging.info("Evaluating initial population.")
+    evaluator.current_generation = 0
     initial_fitnesses = evaluator.evaluate(initial_genotypes)
 
     # Create a population of individuals, combining genotype with fitness.
@@ -274,6 +275,8 @@ def run_experiment(dbengine: Engine) -> None:
             f"Generation {generation.generation_index + 1} / {config.NUM_GENERATIONS}."
         )
 
+        # Set evaluator generation for offspring evaluation.
+        evaluator.current_generation = generation.generation_index + 1
         # Here we iterate the evolutionary process using the step.
         population = modular_robot_evolution.step(population)
 

@@ -22,18 +22,31 @@ def main() -> None:
     )
 
     with Session(dbengine) as ses:
-        row = ses.execute(
-            select(Genotype, Individual.fitness)
-            .join_from(Genotype, Individual, Genotype.id == Individual.genotype_id)
-            .order_by(Individual.fitness.desc())
-            .limit(1)
-        ).one()
-        assert row is not None
+        rows = (
+            ses.execute(
+                select(Genotype, Individual.fitness)
+                .join_from(Genotype, Individual, Genotype.id == Individual.genotype_id)
+                .order_by(Individual.fitness.desc())
+                .limit(5)
+            ).all()
+        )
 
-        genotype = row[0]
-        fitness = row[1]
+    if len(rows) == 0:
+        logging.info("Database is empty.")
+        return
 
-    logging.info(f"Best fitness: {fitness}")
+    logging.info("Top 5 individuals:")
+    for i, (genotype, fitness) in enumerate(rows, start=1):
+        logging.info(f"{i}: fitness={fitness} params={genotype}")
+
+    try:
+        choice = int(input("Select individual to run [1-5, default 1]: ") or "1")
+    except Exception:
+        choice = 1
+    choice = max(1, min(choice, len(rows)))
+
+    genotype = rows[choice - 1][0]
+    logging.info(f"Selected individual {choice} with fitness {rows[choice-1][1]}")
 
     # Create the evaluator.
     evaluator = Evaluator(headless=False, num_simulators=1)
