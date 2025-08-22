@@ -1,68 +1,57 @@
-"""Rerun the best robot between all experiments."""
-
+# rerun_one.py
 import logging
+from sqlalchemy import select, func, desc
+from sqlalchemy.orm import Session
 
 import config
 from database_components import Genotype, Individual
 from evaluator import Evaluator
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
-from revolve2.experimentation.database import OpenMethod, open_database_sqlite
+from revolve2.experimentation.database import open_database_sqlite, OpenMethod
 from revolve2.experimentation.logging import setup_logging
-from revolve2.modular_robot.body.base import ActiveHinge
-from revolve2.modular_robot.brain.cpg import (
-    active_hinges_to_cpg_network_structure_neighbor,
-)
 
 
 def main() -> None:
-    """Perform the rerun."""
     setup_logging()
+    eng = open_database_sqlite(config.DATABASE_FILE, open_method=OpenMethod.OPEN_IF_EXISTS)
 
-    # Load the best individual from the database.
-    dbengine = open_database_sqlite(
-        config.DATABASE_FILE, open_method=OpenMethod.OPEN_IF_EXISTS
-    )
+    with Session(eng, expire_on_commit=False) as ses:
+        # 取“每个 genotype 的历史最好分”，排序去重后列前 TOPK
+        stmt = (
+            select(Genotype, func.max(Individual.fitness).label("fitness"))
+            .join(Individual, Individual.genotype_id == Genotype.id)
+            .group_by(Genotype.id)
+            .order_by(desc("fitness"))
+            .limit(max(config.RERUN_TOPK, config.RERUN_RANK))
+        )
+        rows = ses.execute(stmt).all()
+        if not rows:
+            logging.error("No individuals found in the database.")
+            return
 
-    with Session(dbengine) as ses:
-        row = ses.execute(
-            select(Genotype, Individual.fitness)
-            .join_from(Genotype, Individual, Genotype.id == Individual.genotype_id)
-            .order_by(Individual.fitness.desc())
-            .limit(1)
-        ).one()
-        assert row is not None
+        logging.info("Top %d unique individuals by best fitness:", len(rows))
+        for i, (g, fit) in enumerate(rows, 1):
+            logging.info("%2d) genotype_id=%s  best_fitness=%.6f", i, g.id, float(fit))
 
-        genotype = row[0]
-        fitness = row[1]
+        k = config.RERUN_RANK
+        if not (1 <= k <= len(rows)):
+            logging.error("RERUN_RANK=%d out of range 1..%d", k, len(rows))
+            return
 
-    parameters = genotype.parameters
+        genotype, listed_fit = rows[k - 1]
+        logging.info("Selected rank #%d: gid=%s, listed_best_fitness=%.6f", k, genotype.id, float(listed_fit))
 
-    logging.info(f"Best fitness: {fitness}")
-    logging.info(f"Best parameters: {parameters}")
+        evaluator = Evaluator(headless=bool(config.RERUN_HEADLESS), num_simulators=1)
+        if hasattr(evaluator, "current_generation"):
+            evaluator.current_generation = getattr(config, "NUM_GENERATIONS", 0)  # 用成熟期权重
 
-    # Prepare the body and brain structure
-    active_hinges = config.BODY.find_modules_of_type(ActiveHinge)
-    (
-        cpg_network_structure,
-        output_mapping,
-    ) = active_hinges_to_cpg_network_structure_neighbor(active_hinges)
+        fitness_list = evaluator.evaluate([genotype])  # 一次只跑一个
+        logging.info("Re-simulated fitness = %.6f", float(fitness_list[0]))
 
-    # Create the evaluator.
-    evaluator = Evaluator(
-        headless=False,
-        num_simulators=1,
-        cpg_network_structure=cpg_network_structure,
-        body=config.BODY,
-        output_mapping=output_mapping,
-    )
-
-    # Show the robot.
-    evaluator.evaluate([parameters])
-
-    # Show the robot at the final generation.
-    # evaluator.evaluate([parameters], generation=config.NUM_GENERATIONS - 1)
+        if not config.RERUN_HEADLESS:
+            try:
+                input("Simulation finished. Press <Enter> to exit...")
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":

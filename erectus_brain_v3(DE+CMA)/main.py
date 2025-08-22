@@ -1,15 +1,12 @@
-"""Main script:
-- Supports 'cmaes' | 'de' | 'hybrid (DE -> CMA-ES)'
-- Constant 30s sim time in Evaluator
-- RevDE/jDE improvements on DE
-- Hot-start + mild restarts + top-k re-evaluation for CMA-ES
-"""
+"""Main script for the example."""
 
 import logging
-import math
+from typing import Any
 
 import config
+import multineat
 import numpy as np
+import numpy.typing as npt
 from database_components import (
     Base,
     Experiment,
@@ -23,447 +20,303 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from revolve2.experimentation.database import OpenMethod, open_database_sqlite
+from revolve2.experimentation.evolution import ModularRobotEvolution
+from revolve2.experimentation.evolution.abstract_elements import Reproducer, Selector
 from revolve2.experimentation.logging import setup_logging
-from revolve2.experimentation.rng import seed_from_time
-from revolve2.modular_robot.body.base import ActiveHinge
-from revolve2.modular_robot.brain.cpg import (
-    active_hinges_to_cpg_network_structure_neighbor,
-)
+from revolve2.experimentation.optimization.ea import population_management, selection
+from revolve2.experimentation.rng import make_rng, seed_from_time
 
 
-# ---------- persistence helpers ----------
-def _save_generation(dbengine: Engine, experiment: Experiment, gen_idx: int, params: np.ndarray, fits: np.ndarray) -> None:
-    """Save a generation to the database."""
-    pop = Population(
-        individuals=[
-            Individual(genotype=Genotype(vec), fitness=float(fit))
-            for vec, fit in zip(params, fits)
+class ParentSelector(Selector):
+    """Selector class for parent selection."""
+
+    rng: np.random.Generator
+    offspring_size: int
+
+    def __init__(self, offspring_size: int, rng: np.random.Generator) -> None:
+        """
+        Initialize the parent selector.
+
+        :param offspring_size: The offspring size.
+        :param rng: The rng generator.
+        """
+        self.offspring_size = offspring_size
+        self.rng = rng
+
+    def select(
+        self, population: Population, **kwargs: Any
+    ) -> tuple[npt.NDArray[np.int_], dict[str, Population]]:
+        """
+        Select the parents.
+
+        :param population: The population of robots.
+        :param kwargs: Other parameters.
+        :return: The parent pairs.
+        """
+        return np.array(
+            [
+                selection.multiple_unique(
+                    selection_size=2,
+                    population=[
+                        individual.genotype for individual in population.individuals
+                    ],
+                    fitnesses=[
+                        individual.fitness for individual in population.individuals
+                    ],
+                    selection_function=lambda _, fitnesses: selection.tournament(
+                        rng=self.rng, fitnesses=fitnesses, k=2
+                    ),
+                )
+                for _ in range(self.offspring_size)
+            ],
+        ), {"parent_population": population}
+
+
+class SurvivorSelector(Selector):
+    """Selector class for survivor selection."""
+
+    rng: np.random.Generator
+
+    def __init__(self, rng: np.random.Generator) -> None:
+        """
+        Initialize the parent selector.
+
+        :param rng: The rng generator.
+        """
+        self.rng = rng
+
+    def select(
+        self, population: Population, **kwargs: Any
+    ) -> tuple[Population, dict[str, Any]]:
+        """
+        Select survivors using a tournament.
+
+        :param population: The population the parents come from.
+        :param kwargs: The offspring, with key 'offspring_population'.
+        :returns: A newly created population.
+        :raises ValueError: If the population is empty.
+        """
+        offspring = kwargs.get("children")
+        offspring_fitness = kwargs.get("child_task_performance")
+        if offspring is None or offspring_fitness is None:
+            raise ValueError(
+                "No offspring was passed with positional argument 'children' and / or 'child_task_performance'."
+            )
+
+        original_survivors, offspring_survivors = population_management.steady_state(
+            old_genotypes=[i.genotype for i in population.individuals],
+            old_fitnesses=[i.fitness for i in population.individuals],
+            new_genotypes=offspring,
+            new_fitnesses=offspring_fitness,
+            selection_function=lambda n, genotypes, fitnesses: selection.multiple_unique(
+                selection_size=n,
+                population=genotypes,
+                fitnesses=fitnesses,
+                selection_function=lambda _, fitnesses: selection.tournament(
+                    rng=self.rng, fitnesses=fitnesses, k=2
+                ),
+            ),
+        )
+
+        return (
+            Population(
+                individuals=[
+                    Individual(
+                        genotype=population.individuals[i].genotype,
+                        fitness=population.individuals[i].fitness,
+                    )
+                    for i in original_survivors
+                ]
+                + [
+                    Individual(
+                        genotype=offspring[i],
+                        fitness=offspring_fitness[i],
+                    )
+                    for i in offspring_survivors
+                ]
+            ),
+            {},
+        )
+
+
+class CrossoverReproducer(Reproducer):
+    """A simple crossover reproducer using multineat."""
+
+    rng: np.random.Generator
+    innov_db_body: multineat.InnovationDatabase
+    innov_db_brain: multineat.InnovationDatabase
+
+    def __init__(
+        self,
+        rng: np.random.Generator,
+        innov_db_body: multineat.InnovationDatabase,
+        innov_db_brain: multineat.InnovationDatabase,
+    ):
+        """
+        Initialize the reproducer.
+
+        :param rng: The ranfom generator.
+        :param innov_db_body: The innovation database for the body.
+        :param innov_db_brain: The innovation database for the brain.
+        """
+        self.rng = rng
+        self.innov_db_body = innov_db_body
+        self.innov_db_brain = innov_db_brain
+
+    def reproduce(
+        self, population: npt.NDArray[np.int_], **kwargs: Any
+    ) -> list[Genotype]:
+        """
+        Reproduce the population by crossover.
+
+        :param population: The parent pairs.
+        :param kwargs: Additional keyword arguments.
+        :return: The genotypes of the children.
+        :raises ValueError: If the parent population is not passed as a kwarg `parent_population`.
+        """
+        parent_population: Population | None = kwargs.get("parent_population")
+        if parent_population is None:
+            raise ValueError("No parent population given.")
+
+        offspring_genotypes = [
+            Genotype.crossover(
+                parent_population.individuals[parent1_i].genotype,
+                parent_population.individuals[parent2_i].genotype,
+                self.rng,
+            ).mutate(self.innov_db_body, self.innov_db_brain, self.rng)
+            for parent1_i, parent2_i in population
         ]
-    )
-    generation = Generation(
-        experiment=experiment,
-        generation_index=gen_idx,
-        population=pop,
-    )
-    logging.info("Saving generation.")
-    with Session(dbengine, expire_on_commit=False) as session:
-        session.add(generation)
-        session.commit()
+        return offspring_genotypes
 
 
-# ---------- CMA-ES with hot-start + mild restarts ----------
-def _run_cma_with_tricks(
-    dbengine: Engine,
-    experiment: Experiment,
-    evaluator: Evaluator,
-    initial_mean: np.ndarray,
-    total_gens: int,
-    start_gen_index: int,
-    rng_seed: int,
-    initial_sigma: float | None = None,
-    elite_inject: np.ndarray | None = None,   # NEW: pool of elites to inject in the first few generations
-) -> None:
-    """CMA-ES wrapper: hot-start, active+elitist, diagonal start, mild restarts, top-k re-evaluation, elite injection."""
-    # lazy import
-    import cma
-
-    dim = initial_mean.size
-
-    # ---- CMA options ----
-    base_opts_obj = cma.CMAOptions()
-    base_opts_obj.set("bounds", list(config.BOUNDS))
-    base_opts_obj.set("seed", int(rng_seed))
-    if config.CMA_ACTIVE:
-        base_opts_obj.set("CMA_active", True)
-    if config.CMA_ELITIST:
-        base_opts_obj.set("CMA_elitist", True)
-    if isinstance(config.CMA_DIAGONAL, int) and config.CMA_DIAGONAL > 0:
-        base_opts_obj.set("CMA_diagonal", int(config.CMA_DIAGONAL))
-
-    base_options: dict = dict(base_opts_obj)  # turn into a plain dict
-    popsize_override: int | None = None
-    if config.CMA_POPSIZE is not None:
-        popsize_override = int(config.CMA_POPSIZE)
-
-    sigma = float(initial_sigma) if initial_sigma is not None else float(config.INITIAL_STD)
-
-    # ---- restart state ----
-    restarts_done = 0
-    global_best_f = -1e18
-    global_best_x = initial_mean.copy()
-
-    local_gen = 0
-    while local_gen < total_gens:
-        budget_left = total_gens - local_gen
-
-        opts = dict(base_options)
-        if popsize_override is not None:
-            opts["popsize"] = int(popsize_override)
-
-        logging.info(f"[CMA-ES] (restart #{restarts_done}) init: sigma={sigma:.4f}, popsize={opts.get('popsize', 'auto')}")
-        opt = cma.CMAEvolutionStrategy(initial_mean.tolist(), sigma, opts)
-
-        no_improve_count = 0
-        while budget_left > 0:
-            global_gen = start_gen_index + local_gen
-            logging.info(f"[CMA-ES] Generation {global_gen + 1}")
-
-            # 1) ask – let CMA handle bounds internally (NO manual np.clip here)
-            solutions = np.asarray(opt.ask(), dtype=float)
-
-            # 1.1) elite injection in the first few generations
-            if elite_inject is not None and local_gen < 2:
-                n_inj = min(elite_inject.shape[0], solutions.shape[0])
-                solutions[:n_inj] = elite_inject[:n_inj]
-
-            # 2) evaluate
-            fitnesses = evaluator.evaluate(solutions.tolist(), generation=global_gen)
-
-            # 2.1) optional re-eval top-k to reduce noise
-            if config.CMA_TOPK_REEVAL > 0 and config.CMA_REEVAL_TIMES > 1:
-                k = min(config.CMA_TOPK_REEVAL, solutions.shape[0])
-                idx = np.argsort(fitnesses)[::-1][:k]
-                for i in idx:
-                    acc = fitnesses[i]
-                    for _ in range(config.CMA_REEVAL_TIMES - 1):
-                        acc += evaluator.evaluate([solutions[i]], generation=global_gen)[0]
-                    fitnesses[i] = acc / float(config.CMA_REEVAL_TIMES)
-
-            # 3) tell (CMA minimizes)
-            opt.tell(solutions.tolist(), (-fitnesses).tolist())
-
-            # 4) save
-            _save_generation(dbengine, experiment, global_gen, np.asarray(solutions), np.asarray(fitnesses))
-
-            # 5) progress & restart logic
-            best_idx = int(np.argmax(fitnesses))
-            best_f = float(fitnesses[best_idx])
-            if best_f > global_best_f:
-                global_best_f = best_f
-                global_best_x = solutions[best_idx].copy()
-                no_improve_count = 0
-            else:
-                no_improve_count += 1
-
-            local_gen += 1
-            budget_left -= 1
-
-            if (
-                config.CMA_USE_RESTARTS
-                and no_improve_count >= config.CMA_STALL_GENS
-                and restarts_done < config.CMA_RESTARTS_MAX
-                and local_gen < total_gens
-            ):
-                logging.info("[CMA-ES] Stagnation detected, soft restart with slightly larger sigma and popsize.")
-                initial_mean = global_best_x.copy()
-                sigma *= float(config.CMA_SIGMA_BOOST)
-                cur_popsize = int(opt.popsize)
-                popsize_override = int(max(cur_popsize * config.CMA_POPSIZE_INC, cur_popsize + 1))
-                restarts_done += 1
-                break  # restart
-
-        else:
-            break
-
-    logging.info(f"[CMA-ES] Finished. Best fitness in CMA stage: {global_best_f:.4f}")
-
-
-
-
-
-# ---------- DE with RevDE/jDE tricks ----------
-def _de_evolve_with_tricks(
-    rng: np.random.Generator,
-    evaluator: Evaluator,
-    dim: int,
-    gens: int,
-    low: float,
-    high: float,
-) -> tuple[np.ndarray, np.ndarray, int]:
-    """
-    Run DE for 'gens' generations with:
-    - jDE-style self-adaptation of F and CR
-    - dither (small random F/CR for a subset)
-    - elite injection (replace a fraction of worst by jittered elites)
-    NOTE: This helper does NOT save to DB. Caller is responsible for saving.
-    Returns: (population, fitnesses, last_generation_index_inside_this_call)
-    """
-    N = config.POPULATION_SIZE
-
-    # Initialize population uniformly in bounds
-    population = rng.uniform(low, high, size=(N, dim))
-    fitnesses = evaluator.evaluate(population.tolist(), generation=0)
-
-    # Per-individual F and CR (jDE)
-    F_i = np.full(N, config.DE_F, dtype=float)
-    CR_i = np.full(N, config.DE_CR, dtype=float)
-
-    gen = 0
-    while gen < gens - 1:
-        # jDE adaptation
-        if config.DE_USE_JDE:
-            mask_f = rng.random(N) < config.DE_TAU_F
-            F_i[mask_f] = rng.uniform(config.DE_F_RANGE[0], config.DE_F_RANGE[1], size=np.sum(mask_f))
-            mask_cr = rng.random(N) < config.DE_TAU_CR
-            CR_i[mask_cr] = rng.uniform(config.DE_CR_RANGE[0], config.DE_CR_RANGE[1], size=np.sum(mask_cr))
-
-        trial_vectors = np.empty_like(population)
-        for i in range(N):
-            F_use = F_i[i]
-            CR_use = CR_i[i]
-            if config.DE_USE_DITHER and rng.random() < config.DE_DITHER_PROB:
-                F_use = float(rng.uniform(*config.DE_DITHER_F_RANGE))
-                CR_use = float(rng.uniform(*config.DE_DITHER_CR_RANGE))
-
-            idxs = list(range(N))
-            idxs.remove(i)
-            r1, r2, r3 = rng.choice(idxs, 3, replace=False)
-            best_idx = int(np.argmax(fitnesses))
-
-            if config.DE_STRATEGY == "best1bin":
-                mutant = population[best_idx] + F_use * (population[r2] - population[r3])
-            elif config.DE_STRATEGY == "current2best":
-                mutant = population[i] + F_use * (population[best_idx] - population[i]) + F_use * (population[r2] - population[r3])
-            else:
-                mutant = population[r1] + F_use * (population[r2] - population[r3])
-
-            cross = rng.random(dim) < CR_use
-            if not np.any(cross):
-                cross[rng.integers(dim)] = True
-            trial = np.where(cross, mutant, population[i])
-            trial = np.clip(trial, low, high)
-            trial_vectors[i] = trial
-
-        trial_fitnesses = evaluator.evaluate(trial_vectors.tolist(), generation=gen + 1)
-
-        improved = trial_fitnesses > fitnesses
-        population[improved] = trial_vectors[improved]
-        fitnesses[improved] = trial_fitnesses[improved]
-
-        # Elite injection
-        if config.DE_ELITE_INJECTION and config.DE_INJECTION_RATE > 0.0:
-            k = min(config.DE_ELITE_K, N)
-            worst_n = max(1, int(round(N * config.DE_INJECTION_RATE)))
-            idx_sorted = np.argsort(fitnesses)
-            worst_idx = idx_sorted[:worst_n]
-            top_idx = idx_sorted[-k:]
-            elites = population[top_idx]
-            injected = np.tile(elites, (int(np.ceil(worst_n / k)), 1))[:worst_n]
-            noise = rng.normal(loc=0.0, scale=config.DE_INJECTION_NOISE, size=injected.shape)
-            injected = np.clip(injected + noise, low, high)
-            population[worst_idx] = injected
-            # evaluate injected next loop
-
-        gen += 1
-
-    return population, fitnesses, gen
-
-
-# ---------- experiment driver ----------
 def run_experiment(dbengine: Engine) -> None:
+    """
+    Run an experiment.
+
+    :param dbengine: An openened database with matching initialize database structure.
+    """
     logging.info("----------------")
     logging.info("Start experiment")
 
-    # RNG
-    rng_seed = seed_from_time() % 2**32
-    rng = np.random.default_rng(rng_seed)
+    # Set up the random number generator.
+    rng_seed = seed_from_time()
+    rng = make_rng(rng_seed)
 
-    # Save experiment
+    # Create and save the experiment instance.
     experiment = Experiment(rng_seed=rng_seed)
     logging.info("Saving experiment configuration.")
     with Session(dbengine) as session:
         session.add(experiment)
         session.commit()
 
-    # Build CPG structure & mapping from the fixed body
-    active_hinges = config.BODY.find_modules_of_type(ActiveHinge)
-    cpg_network_structure, output_mapping = active_hinges_to_cpg_network_structure_neighbor(active_hinges)
+    # CPPN innovation databases.
+    innov_db_body = multineat.InnovationDatabase()
+    innov_db_brain = multineat.InnovationDatabase()
 
-    evaluator = Evaluator(
-        headless=True,
-        num_simulators=config.NUM_SIMULATORS,
-        cpg_network_structure=cpg_network_structure,
-        body=config.BODY,
-        output_mapping=output_mapping,
+    """
+    Here we initialize the components used for the evolutionary process.
+    
+    - evaluator: Allows us to evaluate a population of modular robots.
+    - parent_selector: Allows us to select parents from a population of modular robots.
+    - survivor_selector: Allows us to select survivors from a population.
+    - crossover_reproducer: Allows us to generate offspring from parents.
+    - modular_robot_evolution: The evolutionary process as a object that can be iterated.
+    """
+    evaluator = Evaluator(headless=True, num_simulators=config.NUM_SIMULATORS)
+    parent_selector = ParentSelector(offspring_size=config.OFFSPRING_SIZE, rng=rng)
+    survivor_selector = SurvivorSelector(rng=rng)
+    crossover_reproducer = CrossoverReproducer(
+        rng=rng, innov_db_body=innov_db_body, innov_db_brain=innov_db_brain
     )
 
-    dim = cpg_network_structure.num_connections
-    low, high = config.BOUNDS
+    modular_robot_evolution = ModularRobotEvolution(
+        parent_selection=parent_selector,
+        survivor_selection=survivor_selector,
+        evaluator=evaluator,
+        reproducer=crossover_reproducer,
+    )
 
-    # Helper to save the very first generation (g=0)
-    def save_initial(population: np.ndarray, gen_idx: int = 0):
-        fitnesses = evaluator.evaluate(population.tolist(), generation=gen_idx)
-        _save_generation(dbengine, experiment, gen_idx, population, fitnesses)
-        return population, fitnesses
-
-    if config.OPTIMIZER == "cmaes":
-        # Simple CMA-ES from scratch
-        initial_mean = np.full(dim, 0.0, dtype=float)  # center
-        _run_cma_with_tricks(
-            dbengine=dbengine,
-            experiment=experiment,
-            evaluator=evaluator,
-            initial_mean=initial_mean,
-            total_gens=config.NUM_GENERATIONS,
-            start_gen_index=0,
-            rng_seed=rng_seed,
-            initial_sigma=config.INITIAL_STD,
+    # Create an initial population, as we cant start from nothing.
+    logging.info("Generating initial population.")
+    initial_genotypes = [
+        Genotype.random(
+            innov_db_body=innov_db_body,
+            innov_db_brain=innov_db_brain,
+            rng=rng,
         )
+        for _ in range(config.POPULATION_SIZE)
+    ]
 
-    elif config.OPTIMIZER == "de":
-        # Pure DE with tricks
-        population = rng.uniform(low, high, size=(config.POPULATION_SIZE, dim))
-        population, fitnesses = save_initial(population, gen_idx=0)
+    # Evaluate the initial population.
+    logging.info("Evaluating initial population.")
+    evaluator.current_generation = 0
+    initial_fitnesses = evaluator.evaluate(initial_genotypes)
 
-        # Run DE for NUM_GENERATIONS-1 additional generations
-        gen = 0
-        while gen < config.NUM_GENERATIONS - 1:
-            logging.info(f"[DE] Generation {gen + 1} / {config.NUM_GENERATIONS}")
-            # reuse the DE routine with 'gens=2' window (do one update then break)
-            pop, fits, _ = _de_evolve_with_tricks(
-                rng=rng,
-                evaluator=evaluator,
-                dim=dim,
-                gens=2,            # run exactly one update step
-                low=low,
-                high=high,
+    # Create a population of individuals, combining genotype with fitness.
+    population = Population(
+        individuals=[
+            Individual(genotype=genotype, fitness=fitness)
+            for genotype, fitness in zip(
+                initial_genotypes, initial_fitnesses, strict=True
             )
-            # '_de_evolve_with_tricks' internally saves; refresh population/fitnesses
-            population, fitnesses = pop, fits
-            gen += 1
-            _save_generation(dbengine, experiment, gen, population, fitnesses)
+        ]
+    )
 
-    elif config.OPTIMIZER == "hybrid":
-        # ---------------------------------------
-        # Stage 1: DE (with tricks), length = HYBRID_DE_GENERATIONS
-        # ---------------------------------------
-        de_gens = int(config.HYBRID_DE_GENERATIONS)
-        cma_gens = int(config.HYBRID_CMA_GENERATIONS)
-        assert config.NUM_GENERATIONS == de_gens + cma_gens, \
-            "NUM_GENERATIONS must equal DE + CMA lengths (used for phase scheduling in Evaluator)."
+    # Finish the zeroth generation and save it to the database.
+    generation = Generation(
+        experiment=experiment, generation_index=0, population=population
+    )
+    save_to_db(dbengine, generation)
 
-        # Initial population & save g=0
-        population = rng.uniform(low, high, size=(config.POPULATION_SIZE, dim))
-        fitnesses = evaluator.evaluate(population.tolist(), generation=0)
-        _save_generation(dbengine, experiment, 0, population, fitnesses)
-
-        # DE main loop (using the same routine but expanded for 'de_gens')
-        # We adapt the routine here to have visibility on DB saving
-        N = config.POPULATION_SIZE
-        F_i = np.full(N, config.DE_F, dtype=float)
-        CR_i = np.full(N, config.DE_CR, dtype=float)
-        gen = 0
-        while gen < de_gens - 1:
-            logging.info(f"[HYBRID-DE] Generation {gen + 1} / {de_gens}")
-
-            # jDE adaptation
-            if config.DE_USE_JDE:
-                mask_f = rng.random(N) < config.DE_TAU_F
-                F_i[mask_f] = rng.uniform(config.DE_F_RANGE[0], config.DE_F_RANGE[1], size=np.sum(mask_f))
-                mask_cr = rng.random(N) < config.DE_TAU_CR
-                CR_i[mask_cr] = rng.uniform(config.DE_CR_RANGE[0], config.DE_CR_RANGE[1], size=np.sum(mask_cr))
-
-            trial_vectors = np.empty_like(population)
-            for i in range(N):
-                F_use = F_i[i]
-                CR_use = CR_i[i]
-                if config.DE_USE_DITHER and rng.random() < config.DE_DITHER_PROB:
-                    F_use = float(rng.uniform(*config.DE_DITHER_F_RANGE))
-                    CR_use = float(rng.uniform(*config.DE_DITHER_CR_RANGE))
-
-                idxs = list(range(N))
-                idxs.remove(i)
-                r1, r2, r3 = rng.choice(idxs, 3, replace=False)
-                best_idx = int(np.argmax(fitnesses))
-
-                if config.DE_STRATEGY == "best1bin":
-                    mutant = population[best_idx] + F_use * (population[r2] - population[r3])
-                elif config.DE_STRATEGY == "current2best":
-                    mutant = population[i] + F_use * (population[best_idx] - population[i]) + F_use * (population[r2] - population[r3])
-                else:
-                    mutant = population[r1] + F_use * (population[r2] - population[r3])
-
-                cross = rng.random(dim) < CR_use
-                if not np.any(cross):
-                    cross[rng.integers(dim)] = True
-                trial = np.where(cross, mutant, population[i])
-                trial = np.clip(trial, low, high)
-                trial_vectors[i] = trial
-
-            trial_fitnesses = evaluator.evaluate(trial_vectors.tolist(), generation=gen + 1)
-
-            improved = trial_fitnesses > fitnesses
-            population[improved] = trial_vectors[improved]
-            fitnesses[improved] = trial_fitnesses[improved]
-
-            # Elite injection
-            if config.DE_ELITE_INJECTION and config.DE_INJECTION_RATE > 0.0:
-                k = min(config.DE_ELITE_K, N)
-                worst_n = max(1, int(round(N * config.DE_INJECTION_RATE)))
-                idx_sorted = np.argsort(fitnesses)
-                worst_idx = idx_sorted[:worst_n]
-                top_idx = idx_sorted[-k:]
-                elites = population[top_idx]
-                injected = np.tile(elites, (int(np.ceil(worst_n / k)), 1))[:worst_n]
-                noise = rng.normal(loc=0.0, scale=config.DE_INJECTION_NOISE, size=injected.shape)
-                injected = np.clip(injected + noise, low, high)
-                population[worst_idx] = injected
-                # evaluate injected next generation
-
-            gen += 1
-            _save_generation(dbengine, experiment, gen, population, fitnesses)
-
-        # ---------------------------------------
-        # Stage 2: CMA-ES (hot-start + mild restarts)
-        # ---------------------------------------
-        idx_sorted = np.argsort(fitnesses)[::-1]
-        best_idx = int(idx_sorted[0])
-        best_param = population[best_idx].copy()
-
-        k = int(config.HYBRID_TOPK_FOR_CMA)
-        top_idx = idx_sorted[:k]
-        top_params = population[top_idx]
-
-        # Hot-start:
-        #   mean = DE global best (NOT the mean of top-K)
-        #   sigma = 0.5 * median(std(topK)), with a safe lower bound 0.08
-        mean_init = best_param.copy()
-        std_init_vec = np.std(top_params, axis=0)
-        sigma_init = float(max(0.08, 0.5 * np.median(std_init_vec)))  # tighter start
-
-        # Elite pool for injection in the first few CMA generations
-        # (best first, then the rest of top-K)
-        elite_pool = np.vstack([best_param, top_params[1:min(k, len(top_params))]])
-
-        start_gen_index = gen + 1
-        logging.info(f"[HYBRID] Switch to CMA-ES. Hot-start sigma={sigma_init:.4f}")
-        _run_cma_with_tricks(
-            dbengine=dbengine,
-            experiment=experiment,
-            evaluator=evaluator,
-            initial_mean=mean_init,
-            total_gens=cma_gens,
-            start_gen_index=start_gen_index,
-            rng_seed=rng_seed,
-            initial_sigma=sigma_init,
-            elite_inject=elite_pool,  # NEW: inject elites in first CMA generations
+    # Start the actual optimization process.
+    logging.info("Start optimization process.")
+    while generation.generation_index < config.NUM_GENERATIONS:
+        logging.info(
+            f"Generation {generation.generation_index + 1} / {config.NUM_GENERATIONS}."
         )
 
+        # Set evaluator generation for offspring evaluation.
+        evaluator.current_generation = generation.generation_index + 1
+        # Here we iterate the evolutionary process using the step.
+        population = modular_robot_evolution.step(population)
 
-    else:
-        raise ValueError(f"Unknown optimizer '{config.OPTIMIZER}'")
+        # Make it all into a generation and save it to the database.
+        generation = Generation(
+            experiment=experiment,
+            generation_index=generation.generation_index + 1,
+            population=population,
+        )
+        save_to_db(dbengine, generation)
 
 
 def main() -> None:
     """Run the program."""
+    # Set up logging.
     setup_logging(file_name="log.txt")
+
+    # Open the database, only if it does not already exists.
     dbengine = open_database_sqlite(
         config.DATABASE_FILE, open_method=OpenMethod.NOT_EXISTS_AND_CREATE
     )
+    # Create the structure of the database.
     Base.metadata.create_all(dbengine)
 
+    # Run the experiment several times.
     for _ in range(config.NUM_REPETITIONS):
         run_experiment(dbengine)
+
+
+def save_to_db(dbengine: Engine, generation: Generation) -> None:
+    """
+    Save the current generation to the database.
+
+    :param dbengine: The database engine.
+    :param generation: The current generation.
+    """
+    logging.info("Saving generation.")
+    with Session(dbengine, expire_on_commit=False) as session:
+        session.add(generation)
+        session.commit()
 
 
 if __name__ == "__main__":
