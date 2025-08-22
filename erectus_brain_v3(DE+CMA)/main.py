@@ -16,8 +16,9 @@ from database_components import (
     Population,
 )
 from evaluator import Evaluator
+from sqlalchemy import select
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from revolve2.experimentation.database import OpenMethod, open_database_sqlite
 from revolve2.experimentation.evolution import ModularRobotEvolution
@@ -236,15 +237,48 @@ def run_experiment(dbengine: Engine) -> None:
         reproducer=crossover_reproducer,
     )
 
+    # Load top-performing genotypes from a previous database if provided.
+    seed_genotypes: list[Genotype] = []
+    if config.SEED_DATABASE_FILE:
+        try:
+            logging.info(
+                f"Loading top {config.SEED_TOP_K} genotypes from {config.SEED_DATABASE_FILE}."
+            )
+            seed_engine = open_database_sqlite(
+                config.SEED_DATABASE_FILE, open_method=OpenMethod.MUST_EXIST
+            )
+            with Session(seed_engine) as seed_session:
+                top_inds = (
+                    seed_session.execute(
+                        select(Individual)
+                        .options(joinedload(Individual.genotype))
+                        .order_by(Individual.fitness.desc())
+                        .limit(config.SEED_TOP_K)
+                    )
+                    .scalars()
+                    .all()
+                )
+            seed_genotypes = [
+                Genotype(body=i.genotype.body, brain=i.genotype.brain) for i in top_inds
+            ]
+            seed_engine.dispose()
+        except Exception as e:  # pragma: no cover - best effort to load
+            logging.warning(
+                f"Failed to load seed population from {config.SEED_DATABASE_FILE}: {e}"
+            )
+
+    # Ensure the seeded genotypes do not exceed the desired population size.
+    seed_genotypes = seed_genotypes[: config.POPULATION_SIZE]
+
     # Create an initial population, as we cant start from nothing.
     logging.info("Generating initial population.")
-    initial_genotypes = [
+    initial_genotypes = seed_genotypes + [
         Genotype.random(
             innov_db_body=innov_db_body,
             innov_db_brain=innov_db_brain,
             rng=rng,
         )
-        for _ in range(config.POPULATION_SIZE)
+        for _ in range(config.POPULATION_SIZE - len(seed_genotypes))
     ]
 
     # Evaluate the initial population.

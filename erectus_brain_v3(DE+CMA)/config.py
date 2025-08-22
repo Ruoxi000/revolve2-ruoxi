@@ -1,6 +1,11 @@
 """Configuration parameters for this example."""
 
 DATABASE_FILE = "database_new_500gen_best.sqlite"
+# Optional database from which to seed the initial population.
+# If provided, the top K individuals from this database will be used to
+# initialize part of the population for a new training run.
+SEED_DATABASE_FILE = "seed_database.sqlite"
+SEED_TOP_K = 10
 NUM_REPETITIONS = 2
 NUM_SIMULATORS = 4
 POPULATION_SIZE = 100
