@@ -1,22 +1,21 @@
 """Configuration parameters for this example."""
 
-DATABASE_FILE = "database_500_v4_h1_for_compare_seed.sqlite"
-NUM_REPETITIONS = 1
+DATABASE_FILE = "database_new_500gen_best.sqlite"
+NUM_REPETITIONS = 3
 NUM_SIMULATORS = 4
 POPULATION_SIZE = 100
 OFFSPRING_SIZE = 50
 NUM_GENERATIONS = 500
 
 # Optional database from which to seed the initial population.
-SEED_DATABASE_FILE = "database_new_500gen_best.sqlite"
-SEED_TOP_K = 5
+# SEED_DATABASE_FILE = "database_new_500gen_best.sqlite"
+# SEED_TOP_K = 5
 
 # Three-phase fitness weights
-STAND_PHASE_FRAC = 0.1
-#TRANSITION_LENGTH = 10
-
-STAND_PHASE_FRAC = 0
+STAND_PHASE_FRAC = 0.0
 TRANSITION_LENGTH = 0
+
+
 
 # Simulation time (seconds)
 SIM_TIME = 30.0
@@ -37,17 +36,17 @@ FALL_HEIGHT_THRESHOLD = 0.10
 FALL_PENALTY_PER_EVENT = 1.0
 
 # Height drop penalty
-HEIGHT_DROP_WEIGHT = 1.5
+HEIGHT_DROP_WEIGHT = 1.0
 
 # --------- Inversion ----------
-INVERT_PENALTY_PER_EVENT = 1.0
+INVERT_PENALTY_PER_EVENT = 0.8
 
 # --------- Frame-based event detection ----------
 # Minimal consecutive True frames to count 1 event
 FALL_EVENT_MIN_FRAMES   = 2
 INVERT_EVENT_MIN_FRAMES = 2
 # Minimal consecutive False frames between two fall events (recovery)
-FALL_RECOVERY_MIN_FRAMES = 3
+FALL_RECOVERY_MIN_FRAMES = 5
 
 # --------- Uprightness assisted fall detection ----------
 # u = dot(world+Z, body+Z) ∈ [-1,1]; consider "falling posture" if u < U_FALL_THR
@@ -63,11 +62,11 @@ FALL_FRAC_BONUS_THRESHOLD   = 0.10
 INVERT_FRAC_BONUS_THRESHOLD = 0.10
 
 # Height normalization range
-H_MIN, H_MAX = 0.10, 0.35
+H_MIN, H_MAX = 0.10, 0.40
 
 # ---- RERUN SETTINGS ----
-RERUN_RANK     = 2
-RERUN_TOPK     = 5
+RERUN_RANK     = 1
+RERUN_TOPK     = 30
 RERUN_HEADLESS = False
 
 
@@ -77,4 +76,4 @@ BODY_UP_AXIS = "Z"
 
 # --- Orientation events (we now penalize "upright" segments to prefer brain-down) ---
 # 如果 True：把“u>0 的朝上段”当作事件来惩罚（鼓励脑壳朝下）。
-INVERT_EVENT_COUNTS_UPRIGHT = True
+INVERT_EVENT_COUNTS_UPRIGHT = False
