@@ -49,6 +49,8 @@ To set up the workspace, please complete the environment setup sequentially:
    Once the Revolve2 core ecosystem is activated and active within your virtual environment, install the supplementary dependencies required specifically by this evolutionary branch:
    ```bash
    pip install -r requirements.txt
+   
+---
 
 ## 📜 License
 This project is licensed under the MIT License. Please cite this project and the corresponding Master Thesis if you use or adapt this code in your academic work.
