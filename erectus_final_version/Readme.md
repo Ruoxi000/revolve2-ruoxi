@@ -44,3 +44,11 @@ To set up the workspace, please complete the environment setup sequentially:
    ```bash
    git clone https://github.com/Ruoxi000/revolve2-ruoxi.git
    cd revolve2-ruoxi/erectus_final_version
+
+3. **Install Supplementary Dependencies**
+   Once the Revolve2 core ecosystem is activated and active within your virtual environment, install the supplementary dependencies required specifically by this evolutionary branch:
+   ```bash
+   pip install -r requirements.txt
+
+## 📜 License
+This project is licensed under the MIT License. Please cite this project and the corresponding Master Thesis if you use or adapt this code in your academic work.
