@@ -42,5 +42,5 @@ To set up the workspace, please complete the environment setup sequentially:
 
 2. **Clone this Project Repository**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/Ruoxi000/revolve2-ruoxi.git
    cd revolve2-ruoxi/erectus_final_version
